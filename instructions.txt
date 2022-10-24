@@ -1,0 +1,561 @@
+This file provides detailed instructions for the evaluation of the
+artifact. Following the recommandations issued on the artifact
+webpage, it is divided into four sections:
+
+   1. Paper claims
+   2. Basic testing
+   3. Evaluation instructions
+   4. Additional description
+
+
+==============================================================================
+1. Paper claims
+==============================================================================
+The paper makes both theoretical claims and practical claims.
+
+The former (mainly Theorem 4.2, Theorem 4.4, Theorem 5.6, Theorem 5.9, and
+Theorem 6.2) were proved on paper and proofs will be included in the
+appendix of a long version. Thus, they are not the object of this artifact.
+
+The latter are based on the evaluation of the PyPPAI (Python Probabilistic
+Programs Abstract Interpreter, also noted Pyppai) static analyser on a
+series of Pyro programs taken from the Pyro webpage. We have implemented
+the Pyppai static analyser in OCaml and will make its source code publicly
+available. The practical claims made based on the use of Pyppai focus on
+two points:
+
+ (a) The smoothness static analysis, which conservatively infers sets
+     of random variables with respect to which the probability density
+     of a probabilistic programs is "smooth", where smooth means either
+     differentiable or locally Lipschitz-continuous (the analysis supports
+     both and takes the property of interest as a parameter).
+
+ (b) The selection of reparameterisable random variables for the optimised
+     inference of a pair of probabilistic programs called a model and a
+     guide.
+
+The claims related to (a) appear in Table 3 (and Table 6 in the appendix).
+The claims related to (b) appear in Table 4 (and Table 7 in the appendix).
+Both of these series of claims are the object of this artifact.
+
+
+==============================================================================
+2. Basic testing
+==============================================================================
+The object of basic testing is to confirm that the Pyppai static analyser
+is installed as well as all its dependences and can run normally.
+
+To do this carry out the following operations:
+
+1. open a terminal (using the Applications > Accessories > Byobu Terminal
+   or Applications > Accessories > Mate Terminal).
+
+2. in the terminal, run the following commands:
+
+   cd Desktop/pyppai
+   make                   # this step compiles all executables of Pyppai
+   make reparl            # this step performs one instance of our analysis
+                          # on all test cases (should run in a few seconds)
+
+3. open the file "reparl.all" in the Desktop/pyppai directory with a text
+editor (emacs, gvim, and vi are available and can be ran from the terminal),
+go to the end of the file, and check that all test cases show "OK".
+
+
+==============================================================================
+3. Evaluation instructions
+==============================================================================
+This section is divided into four parts. The first part discusses the basic
+uses of the pyppai static analyser. The second part describes the list of
+test cases. The third part and the fourth part respectively focus on the
+reproduction of the claims (a) and (b) (in section 1).
+
+
+3.1. Running the pyppai analyser.
+
+For the sake of simplicity, we provide a makefile that encapsulates both
+the compilation and the execution of the pyppai static analyser. Thus,
+all the commands in this section are based on the makefile.
+
+The command for the compilation is based on the dune build system (it is
+invoked by 'make' as seen above):
+
+  $(DIFF-MAIN):
+          dune build $(DIFF-MAIN)  && cp $(DIFF-MAIN)  diff-main.exe
+  $(DIFF-BATCH):
+          dune build $(DIFF-BATCH) && cp $(DIFF-BATCH) diff-batch.exe
+
+The execution of Pyppai on each test case is based on the passing of a
+number of options which are set in the makefile and in an OCaml file that
+includes all the regression testing data. This file is located in:
+
+         batch_diff/batch_diff.ml
+
+We encourage the reader to have a look at the parameters described in this
+file as we comment them more in detail below.
+
+For each mode (smoothness analysis or reparameterisation), it is possible
+to run Pyppai on each example one by one (which is preferable to produce
+shorter logs, that are easier to compare with the paper claims) or to run
+it on all examples in a same execution (which is best for regression testing
+purpose). We explain both in the following, but stress the former as we
+think it is easier to check the paper claims.
+
+
+3.2. Test cases and overview of the makefile targets.
+
+The paper studies 13 model/guide pairs from the Pyro test suite, and 1
+model/guide pair from Section 2 of our paper, which are listed below,
+together with their position in the list "tests_diff_all" in
+batch_diff/batch_diff.ml:
+
+  0. air model
+  1. air guide
+  2. br model
+  3. br guide
+  4. csis model
+  5. csis guide
+  6. dmm model
+  7. dmm guide
+  8. lda model
+  9. lda guide
+ 10. sgdef model
+ 11. sgdef guide
+ 12. ssvae model
+ 13. ssvae guide
+ 14. vae model
+ 15. vae guide
+ 16. spnor model
+ 17. spnor guide
+ 18. dpmm model
+ 19. dpmm guide
+ 20. cvae model
+ 21. cvae guide
+ 22. scanvi model
+ 23. scanvi guide
+ 24. prodlda model
+ 25. prodlda guide
+ 26. mhmm model
+ 27. mhmm guide
+
+Furthermore, for each example, the "tests_diff_all" structure contains:
+
+ - a link to the source code (file and entry point);
+ - manually written lists of random variables and learnable parameters,
+   smoothness information for each random variable or learnable parameter,
+   which is used to confirm the correctness of the analyses results (we get
+   back to this in the next two sub-sections).
+
+Moreover, comments give additional explanations regarding to the reasons
+why density is smooth or not with respect to certain random variables or
+parameters (for which this is more difficult to see). The summary description
+of all the examples is given in the paper in Table 2. The source files are
+available under the Desktop/srepar directory.
+
+For each test case 'test', the makefile contains 5 entries:
+
+ compd.test:  compositional differentiability analysis (point (a))
+ compl.test:  compositional lipschitzness analysis (point (a))
+ fwdd.test:   forward differentiability analysis, not described in the paper
+              (this analysis computes in a different manner results that are
+              very similar to compd.test; although its description is probably
+              interesting we did not do it in our paper for space reason)
+ repard.test: reparameterisation with differentiability information
+              (this analysis should be considered experimental)
+ reparl.test: reparameterisation with lipschitzness information (point (b))
+
+We discuss in the next two sub-section the use of these targets to confirm the
+claims in the paper.
+
+Moreover, the makefile contains the following targets to run many tests in
+one command:
+
+ compd-split:   runs all compd.test targets
+ compl-split:   runs all compl.test targets
+ reparl-split:  runs all reparl.test targets
+ compd:         runs all compd.test in a single file  (regression testing)
+ compl:         runs all compl.test in a single file  (regression testing)
+ reparl:        runs all reparl.test in a single file (regression testing)
+
+To help the reader understand the makefile targets, we list the main options
+that can be observed in these:
+
+ -comp       compositional analysis      (-no-comp to deactivate it)
+ -fwd        forward analysis            (-no-fwd to deactivate it)
+ -analysis   only run the analysis (no reparameterisation)
+ -srepar-n   performs analysis and reparameterisation
+ -g-diff     use differentiability as a target property
+ -g-lipsch   use Lipschitzness as a target property
+ -sel i      selects model at index i and guide at index i+1 (see above for
+             the test case indexes)
+
+As indicated in the paper, computation times are very low, so total runtimes
+(even in the regression testing mode where all tests are ran in sequence)
+should be of at most a few seconds.
+
+
+3.3. Smoothness analysis (see above, Section 1, point (a)).
+
+We now discuss in detail how the claims regarding to the smoothness analysis
+(differentiability or lipschitzness) can be checked using the aforementioned
+compd.test and compl.test targets. For this, we explain the steps performed
+by the analysis, the log structure, and how the log contents establishes the
+claims of the paper.
+
+In this subsections, we are looking at the compd.x and compl.x targets, with
+flags -analysis (only analysis), -comp, -no-fwd (compositional smoothness
+analysis ON, forward smoothness analysis --that is not described in the paper--
+OFF) and either -g-diff or -g-lipsch (depending on the property that is
+considered).
+
+In this case one analysis run proceeds as follows:
+
+ 1. parsing of the python source
+ 2. forward pre-analysis to determine safety properties (numerical invariants
+    that make it possible to check whether each operation in the program may
+    cause an error, possibly yielding non smoothness); this phase is referred
+    to as "initial forward analysis"
+ 3. compositional analysis for smoothness (differentiability or lipschitzness
+    depending on the parameter), using information 
+
+Moreover, each test case corresponds to two analyses: one for the model, and
+then the other for the guide.
+
+We now show a log structure. As an example, we consider compd.air (example
+air, differentiability analysis) and elide long programs or invariant dumps
+with [...explanation...]. First, we look into the analysis of the model:
+
+   ===========================================================================
+   Analysing for differentiability "../srepar/srepar/examples/air/model.py"
+   ---------------------------------------------------------------------------
+   Program:
+     [...program abstract syntax tree...]
+   ---------------------------------------------------------------------------
+   Analysis starts(forward,num:(signs) X (Apron<nd_PA_box>))
+   ---------------------------------------------------------------------------
+   Analysis log...
+   ---------------------------------------------------------------------------
+   Analysis output(forward,num:(signs) X (Apron<nd_PA_box>)): (no div0,pars:?)
+     [...output during the initial forward analysis...]
+   ---------------------------------------------------------------------------
+   ---------------------------------------------------------------------------
+   Output of initial forward analysis:
+     [...information computed by the initial forward analysis: parameters
+         found; numerical information; safety;...]
+   ---------------------------------------------------------------------------
+   Analysis starts(forward+relational,num:top domain)
+   ---------------------------------------------------------------------------
+   Analysis log...
+   ---------------------------------------------------------------------------
+   Analysis output(forward+relational,num:top domain): (no div0,pars:?)
+     [...compositional smoothness analysis results...]
+   ---------------------------------------------------------------------------
+   RESULT FOR ../srepar/srepar/examples/air/model.py:
+   oracle:	{ decode_l2; }
+   result:	{ decode_l2; }
+   ===========================================================================
+
+The last three lines describe:
+
+ - the oracle result (smoothness information collected by hand for the sake
+   of regression testing, as shown in batch_diff/batch_diff.ml);
+ - the smoothness information computed by the analysis.
+
+The two values should match when the analysis computes the expected
+information. The log continues with a similar section related to the analysis
+of the guide. Finally, the final part of the log describes the status of the
+testing and produce the numbers shown in the paper. In the case of compd.air,
+we get:
+
+   ===========================================================================
+   REGRESSION TEST RESULTS:
+   ===========================================================================
+   Total:   2
+   OK:      2
+   KO:      0
+   Crash:   0
+   Unknown: 2
+   Failed cases:
+   ===========================================================================
+   Detailed results:
+   ===========================================================================
+   air guide              OK    0.0769 s  rvar(cont+disc)+param: [3 smooth, 14 may nonsmooth] (may nonsmooth={ bl_c_init; bl_h_init; bl_predic
+   air model              OK    0.1007 s  rvar(cont+disc)+param: [1 smooth, 4 may nonsmooth] (may nonsmooth={ decode_l1; z_pres_{}; z_what_{};
+   ===========================================================================
+   Batch testing finished!
+
+This means that the model has 1 differentiable continuous random variable
+and the guide has 3. Note that the numbers include only the continuous
+random variables (discrete random variables are obviously not smooth).
+
+Most importantly, you can reproduce each column of Table 3 (and 6) mainly by
+running `make compd` and `make compl`:
+
+  - The columns `Manual` are obtained by inspecting the oracle results
+    (i.e., expected smoothness results) recorded in batch_diff/batch_diff.ml.
+  - The columns `Ours` and `Time` are obtained from the outputs of compd and
+    compl, especially from (# smooth rvar+param): e.g., 3 for air-guide from
+    compd.air explained above.
+  - The column `#CRP` is obtained by computing (# smooth rvar+param) + (# may
+    nonsmooth rvar+param) - (# discrete rvar), where the first two values are
+    obtained from the output of compd and compl and the third value is
+    obtained by inspecting the actual python codes (in Desktop/srepar).
+    
+For your reference, we attach below the number and names of discrete random
+variables in each example:
+
+  example         number (name) of discrete random variables
+  ----------------------------------------------------------
+  air guide       1 (z_pres_{})
+  air model       1 (z_pres_{})
+  br guide        0
+  br model        0
+  csis guide      0
+  csis model      0
+  cvae guide      0
+  cvae model      0
+  dmm guide       0
+  dmm model       0
+  dpmm guide      1 (z)
+  dpmm model      1 (z)
+  lda guide       0
+  lda model       1 (word_topics)
+  mhmm guide      0
+  mhmm model      1 (y_{})
+  prodlda guide   0
+  prodlda model   0
+  scanvi guide    1 (y)
+  scanvi model    1 (y)
+  sgdef guide     0
+  sgdef model     0
+  spnor guide     0
+  spnor model     0
+  ssvae guide     1 (y)
+  ssvae model     1 (y)
+  vae guide       0
+  vae model       0
+
+
+3.4. Selective reparameterisation analysis (see above, Section 1, point (b)).
+
+The selective reparameterisation involves several smoothness analysis
+phases, thus we recommend consider the evaluation of the smoothness analysis
+(in the previous subsection) before the following steps.
+
+In this subsections, we are looking at the reparl.x target, with flags
+-srepar-n (analysis + selective reparameterisation) and -g-lipsch.
+
+To perform selective reparameterisation, pyppai performs the following
+steps:
+
+ 1. parsing of the python sources of both model and guide and smoothness
+    analysis as explained before
+ 2. determination of the random variables that satisfy the reparameterisation
+    condition in the guide
+ 3. production of a reparameterised guide (according to the random variables
+    selected in step 2).
+ 4. analysis of the resulting guide
+ 5. checking that the reparameterisation correctness condition is satisfied
+
+Remark: if the condition 5 is not satisfied, a new, smaller set of variables
+should be used for reparameterisation (according to Section 6 in our paper),
+and the steps 3-5 should in theory be done again; however, this does not
+happen in any of the examples encountered so far (as mentioned in the last
+paragraph of Section 6 in our paper).
+
+Therefore, the reparl.x file have the following layout (we consider air as
+an example again):
+
+   [...analysis of the model...]
+   [...analysis of the guide...]
+   ===========================================================================
+   REPARAMETERISATION CONDITIONS:
+   ===========================================================================
+   [...a few lines showing the conditions to evaluate the candidate
+       set of variables that can be safely reparameterised...]
+   ---------------------------------------------------------------------------
+   Sets of reparameterised variables
+   ---------------------------------------------------------------------------
+   Repar set: [...set of variables that can be reparameterised...]
+   ---------------------------------------------------------------------------
+   Reparameterised model:
+   ----------------------------------------------------------------------------
+   [...source code of the reparameterised model...]
+   ---------------------------------------------------------------------------
+   Reparameterised guide:
+   ----------------------------------------------------------------------------
+   [...source code of the reparameterised guide...]
+   ===========================================================================
+   [...analysis of the reparameterised model...]
+   [...analysis of the reparameterised guide...]
+   ---------------------------------------------------------------------------
+   TIME,../srepar/srepar/examples/air/model.py,model: 0.0206 s
+   TIME,../srepar/srepar/examples/air/guide.py,guide: 0.1209 s
+   ===========================================================================
+   REGRESSION TEST RESULTS:
+   ===========================================================================
+   air guide              OK    0.2239 s  rvar(cont+disc): [1 repar, 3 all] (all={ z_pres_{}; z_what_{}; z_where_{}; })
+   ===========================================================================
+   Batch testing finished!
+
+The last line, especially `... OK ... [1 repar, 3 all] ...`, states that our
+analysis (in step 2) found 1 random variable to be reparameterisable among
+3 continuous/discrete random variables, and it successfully checked the
+correctness condition (in step 5) for the reparameterisation of the chosen
+1 random variable.
+
+Most importantly, you can reproduce each column of Table 4 (and 7) mainly by
+running `make reparl`:
+
+  - The column `Ours` is obtained from the output of reparl, especially
+    from (# repar rvar): e.g., 1 for air from reparl.air explained above.
+  - The column `#DR` is obtained from the list of discrete random variables
+    (shown in the previous subsection). We found two typos on this column
+    (air: 2-->1, lda: 2-->1); we will fix them in our paper.
+  - The column `#CR` is obtained by computing (# all rvar) - (# discrete
+    rvar), where the first value is obtained from the output of reparl and
+    the second value from the column `#DR`.
+  - The column `Pyro \ Ours` is obtained by manually inspecting the oracle
+    smoothness results recorded in batch_diff/batch_diff.ml.
+
+
+==============================================================================
+4. Additional description
+==============================================================================
+
+In this section, we provide some additional information about advanced use
+of pyppai to either analyse other programs or to better understand and check
+the analysis process.
+
+4.1. Code structure
+
+The Pyppai source code includes several analyses, including a previously
+published support analysis. Therefore, we only list here the files that
+are connected with the smoothness analysis and reparameterisation.
+We are interested in the following directory:
+
+ - lib:
+   general utilities and primitives to interact with the Apron numerical
+   abstract domain library
+ - pyir:
+   frontend components, which are based on the pyml and pyast libraries
+ - ai_diff:
+   core of the implementation of the smoothness analysis
+ - batch_diff:
+   entry point of the batch testing of the smoothness analysis and of the
+   selective reparameterisation
+ - entry_diff:
+   standalone smoothness analysis (for convenience we recommend all tests
+   be done with the batch testing though).
+
+We detail the content of ai_diff and batch_diff directories (we omit the
+"dune" files which control the build system):
+
+  ai_diff/ai_diff.{ml,mli}
+     analysis abstract interpreter (main analysis engine)
+  ai_diff/ddom_diff.{ml,mli}
+     implementation of the modules for all the smoothness abstract domains used
+     in the smoothness analysis
+  ai_diff/ddom_sig.ml
+     main type definitions
+  ai_diff/diff_util.{ml,mli}
+     general utilities for the differentiability/lipschitzness analysis
+  ai_diff/dom_util.{ml,mli}
+     abstract domain utilities
+  ai_diff/ddom_num.{ml,mli}
+     implementation of the modules for the numerical abstarct domains
+  ai_diff/reparam.ml
+     program transformation for the reparameterisation
+  batch_diff/batch_diff.ml
+     entry point of the analysis with regression testing.
+  
+
+4.2. Generation of detailed analysis logs
+
+It is possible to turn on many flags in order to get verbose description
+of the analysis steps. This is useful in order to understand the analysis
+intermediate results, but turning on many of these flags quickly make logs
+very long. The flags are located in ai_diff/diff_util.ml. The main flags
+are listed below with the description of the kind of information they
+lead to dump:
+
+ dbg_apron     numerical abstract domain
+ dbg_init      smoothness abstract domain initialisation
+ dbg_join      smoothness abstract domain join
+ dbg_compose   smoothness abstract domain compose operation
+ dbg_call      smoothness abstract domain function calls analysis
+ dbg_param     analysis of the parameter definitions
+ dbg_module    analysis of the modules definitions
+ dbg_sample    analysis of the "sample" probabilistic programming operation
+ dbg_observe   analysis of the "observe" probabilistic programming operation
+ dbg_loop      analysis of loops
+
+After any modification, just type "make" in the pyppai directory to rebuild
+all the executables with the desired level of verbosity.
+
+Each flag typically leads to the display of intermediate invariants. Thus,
+to understand these outputs, we need to describe the abstract information
+computed by the analysis. Such abstract information describe in a conservative
+manner sets of functions from states to states. We recall that states are in
+fact a generalisation of memory states (see paper) where "variables" are of
+either of the following four forms:
+
+   - a program variable
+   - [randvar:rdb] where randvar is a random variable:
+     random database entry for "randvar"
+   - [randvar:prb] where randvar is a random variable:
+     probability density entry for "randvar"
+   - [randvar:val] where randvar is a random variable:
+     sampled value for "randvar"
+
+The general structure of an abstraction of a set of functions is as follows:
+
+   Mods: [...set of modified variables...]
+   Deps: (only non x -> {x} cases)
+      [...list of dependence sets of the form var => { var set }...]
+   May non-smooth: (only non empty cases)
+      [...list of possibly non smooth sets of the form var => { var set }...]
+
+Note that trivial dependences (x => would mean that x depends just on itself)
+and smoothness information (x => { } would mean that x is smooth with respect
+to all program variables) are ommitted for the sake of concision (logs do get
+large).
+
+
+4.3. Process to create additional test cases.
+
+We now list the steps to analyse additional test cases.
+
+The simpler way to do it is to add entries in the batch_diff/batch_diff.ml
+file, to recompile pyppai, and then to add new makefile targets, in a similar
+way as for the existing tests:
+
+- add two new entries at the end of the tests_diff_all_list of the following
+  form (the first will denote the model, the second the guide):
+    { rte_name       = 
+      rte_filename   = 
+      rte_inlinefns  = 
+      rte_diffinfo   = 
+      rte_rvars      = 
+      rte_guide_pars = 
+    }
+  (it is very important that the new entries are added at the end of the list
+  since the makefile selects tests using indexes)
+
+- fill in the name (rte_name), source code destination (rte_filename), and
+  the list of entry point functions (rte_inlinefs; usually a single function
+  is considered);
+
+- fill in the list of random variables and learnable parameters in the
+  rte_vars and rte_guide_pars fields (each field should be a "string list")
+
+- set the rte_diffinfo to either reflect the absence of information (None)
+  or (optionally) a list of manually checked pieces of differentiability
+  information (Diff for differentiable and Lips for locally Lipschitz).
+
+The last step is only useful in regression testing mode. It is safe to just
+put "None". The analysis will run and it is possible to look into the
+smoothness information that it computes by hand. Note that the log will
+contain a "FAIL" in that case, which just means that the regression tester
+could not confirm that the analysis output is confirmed to be equal to the
+manually entered output (because there is no such output...).
