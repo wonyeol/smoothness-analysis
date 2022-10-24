@@ -1,0 +1,33 @@
+FILES={model,guide,modelguide}.py
+SKIP=2>/dev/null || true
+wc:
+	wc -l ./air/$(FILES) $(SKIP)
+	wc -l ./br/$(FILES) $(SKIP)
+	wc -l ./csis/$(FILES) $(SKIP)
+	wc -l ./cvae/$(FILES) $(SKIP)
+	wc -l ./dmm/$(FILES) $(SKIP)
+	wc -l ./dpmm/$(FILES) $(SKIP)
+	wc -l ./lda/$(FILES) $(SKIP)
+	wc -l ./mhmm/$(FILES) $(SKIP)
+	wc -l ./prodlda/$(FILES) $(SKIP)
+	wc -l ./scanvi/$(FILES) $(SKIP)
+	wc -l ./sgdef/$(FILES) $(SKIP)
+	wc -l ./spnor/$(FILES) $(SKIP)
+	wc -l ./ssvae/$(FILES) $(SKIP)
+	wc -l ./vae/$(FILES) $(SKIP)
+
+pygount:
+	pygount ./air/$(FILES) $(SKIP)
+	pygount ./br/$(FILES) $(SKIP)
+	pygount ./csis/$(FILES) $(SKIP)
+	pygount ./cvae/$(FILES) $(SKIP)
+	pygount ./dmm/$(FILES) $(SKIP)
+	pygount ./dpmm/$(FILES) $(SKIP)
+	pygount ./lda/$(FILES) $(SKIP)
+	pygount ./mhmm/$(FILES) $(SKIP)
+	pygount ./prodlda/$(FILES) $(SKIP)
+	pygount ./scanvi/$(FILES) $(SKIP)
+	pygount ./sgdef/$(FILES) $(SKIP)
+	pygount ./spnor/$(FILES) $(SKIP)
+	pygount ./ssvae/$(FILES) $(SKIP)
+	pygount ./vae/$(FILES) $(SKIP)
