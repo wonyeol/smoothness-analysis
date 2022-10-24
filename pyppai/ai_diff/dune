@@ -1,0 +1,6 @@
+(library
+  (name ai_diff)
+  (wrapped false)
+  (flags -w +9)
+  (libraries apron.boxMPQ apron.octMPQ apron.polkaMPQ unix stdcompat pyml
+    lib pyir))

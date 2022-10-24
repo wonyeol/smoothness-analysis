@@ -1,0 +1,6 @@
+(library
+  (name lib)
+  (wrapped false)
+  (flags -w +9)
+  (libraries apron.boxMPQ apron.octMPQ apron.polkaMPQ)
+)

@@ -1,0 +1,5 @@
+(executable
+  (name batch_diff)
+  (flags -w +9)
+  (libraries apron.boxMPQ apron.octMPQ apron.polkaMPQ unix stdcompat str pyml pyir
+    ai_diff))

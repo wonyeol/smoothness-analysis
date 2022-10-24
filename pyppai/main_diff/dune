@@ -1,0 +1,5 @@
+(executable
+  (name entry_diff)
+  (flags -w +9)
+  (libraries apron.boxMPQ apron.octMPQ apron.polkaMPQ unix stdcompat pyml pyir
+    ai_diff))

@@ -1,0 +1,25 @@
+*** pyro_test_suite/{model,guide}?.py *** 
+
+(1) Generated from the regression test file:
+
+https://github.com/pyro-ppl/pyro/blob/dev/tests/infer/test_valid_models.py
+
+in the development branch. The version number is 7aeebb9, and it was last editted on Jan 7 2019. 
+
+(2) We copied this file and stored it in our repository. The copied file is also called test_valid_models.py. 
+
+(3) Hongseok recorded this information after creating the first 11 examples without recording appropriate provenance of those examples. Although this lack of check won't cause any discrepancy, we should be aware of it.
+
+(4) We picked cases in the file that test desired or undesired relationships between model and guide. The other cases are converted to pyro_test_suite?.py examples described in the next section. 
+
+(5) We simplified a few things in the cases manually, so as to avoid being stuck with the complexity of developing full-blown analyser for python. However, we tried to minimise this manual intervention as much as possible.
+
+*** pyro_test_suite/nr?.py *** 
+
+(1) Generated from the regression test file:
+
+https://github.com/pyro-ppl/pyro/blob/dev/tests/infer/test_valid_models.py
+
+in the development branch. The version number is 7aeebb9, and it was last editted on Jan 7 2019.
+
+(2) We picked non-relational test cases in the file and converted them to our pyro_test_suite?.py examples.

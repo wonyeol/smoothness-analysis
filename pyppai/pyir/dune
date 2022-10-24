@@ -1,0 +1,6 @@
+(library
+  (name pyir)
+  (wrapped false)
+  (flags -w +9)
+(preprocess (pps refl.ppx))
+  (libraries apron.boxMPQ apron.octMPQ apron.polkaMPQ pyml refl pyast lib))
