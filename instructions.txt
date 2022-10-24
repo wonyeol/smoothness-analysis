@@ -13,7 +13,7 @@ webpage, it is divided into four sections:
 ==============================================================================
 The paper makes both theoretical claims and practical claims.
 
-The former (mainly Theorem 4.2, Theorem 4.4, Theorem 5.6, Theorem 5.9, and
+The former (mainly Theorem 4.2, Theorem 4.5, Theorem 5.6, Theorem 5.8, and
 Theorem 6.2) were proved on paper and proofs will be included in the
 appendix of a long version. Thus, they are not the object of this artifact.
 
@@ -34,8 +34,8 @@ two points:
      inference of a pair of probabilistic programs called a model and a
      guide.
 
-The claims related to (a) appear in Table 3 (and Table 6 in the appendix).
-The claims related to (b) appear in Table 4 (and Table 7 in the appendix).
+The claims related to (a) appear in Table 4 (and Table 8 in the appendix).
+The claims related to (b) appear in Table 5 (and Table 9 in the appendix).
 Both of these series of claims are the object of this artifact.
 
 
@@ -149,7 +149,7 @@ Furthermore, for each example, the "tests_diff_all" structure contains:
 Moreover, comments give additional explanations regarding to the reasons
 why density is smooth or not with respect to certain random variables or
 parameters (for which this is more difficult to see). The summary description
-of all the examples is given in the paper in Table 2. The source files are
+of all the examples is given in the paper in Table 3. The source files are
 available under the Desktop/srepar directory.
 
 For each test case 'test', the makefile contains 5 entries:
@@ -279,61 +279,30 @@ we get:
    ===========================================================================
    Detailed results:
    ===========================================================================
-   air guide              OK    0.0769 s  rvar(cont+disc)+param: [3 smooth, 14 may nonsmooth] (may nonsmooth={ bl_c_init; bl_h_init; bl_predic
-   air model              OK    0.1007 s  rvar(cont+disc)+param: [1 smooth, 4 may nonsmooth] (may nonsmooth={ decode_l1; z_pres_{}; z_what_{};
+   air (1-model)        OK   0.1007s   #RP:  manl(smt, ~smt)  1  4 | ours(smt, may~smt)  1  4 | totl(cont, disc)  4  1
+   air (2-guide)        OK   0.0769s   #RP:  manl(smt, ~smt)  3 14 | ours(smt, may~smt)  3 14 | totl(cont, disc) 16  1
    ===========================================================================
    Batch testing finished!
 
-This means that the model has 1 differentiable continuous random variable
-and the guide has 3. Note that the numbers include only the continuous
-random variables (discrete random variables are obviously not smooth).
+The last two lines, especially `air (1-model) ... ours(smt, may~smt) 1 ...` and
+`air (2-guide) ... ours(smt, may~smt) 3 ...`, state that the model has 1
+differentiable random variable or parameter, and the guide has 3.
 
-Most importantly, you can reproduce each column of Table 3 (and 6) mainly by
-running `make compd` and `make compl`:
+Most importantly, you can reproduce each column of Tables 4 and 8 by running
+`make compd` and `make compl`:
 
-  - The columns `Manual` are obtained by inspecting the oracle results
-    (i.e., expected smoothness results) recorded in batch_diff/batch_diff.ml.
-  - The columns `Ours` and `Time` are obtained from the outputs of compd and
-    compl, especially from (# smooth rvar+param): e.g., 3 for air-guide from
-    compd.air explained above.
-  - The column `#CRP` is obtained by computing (# smooth rvar+param) + (# may
-    nonsmooth rvar+param) - (# discrete rvar), where the first two values are
-    obtained from the output of compd and compl and the third value is
-    obtained by inspecting the actual python codes (in Desktop/srepar).
-    
-For your reference, we attach below the number and names of discrete random
-variables in each example:
-
-  example         number (name) of discrete random variables
-  ----------------------------------------------------------
-  air guide       1 (z_pres_{})
-  air model       1 (z_pres_{})
-  br guide        0
-  br model        0
-  csis guide      0
-  csis model      0
-  cvae guide      0
-  cvae model      0
-  dmm guide       0
-  dmm model       0
-  dpmm guide      1 (z)
-  dpmm model      1 (z)
-  lda guide       0
-  lda model       1 (word_topics)
-  mhmm guide      0
-  mhmm model      1 (y_{})
-  prodlda guide   0
-  prodlda model   0
-  scanvi guide    1 (y)
-  scanvi model    1 (y)
-  sgdef guide     0
-  sgdef model     0
-  spnor guide     0
-  spnor model     0
-  ssvae guide     1 (y)
-  ssvae model     1 (y)
-  vae guide       0
-  vae model       0
+  - All columns are obtained from the `Detailed results` part of the output
+    files `compd.all` and `compl.all`.
+  - The column `#CRP` is recorded right after `totl(cont, disc)`.
+    E.g., the value is 4 for `air (1-model)` in `compd.all`.
+  - The columns under `Differentiable` are obtained from `compd.all`, and
+    those under `Locally Lipschitz` from `compl.all`.
+  - The column `Manual` is recorded right after `manl(smt, ~smt)`.
+    E.g., the value is 1 for `air (1-model)` in `compd.all`.
+  - The column `Ours` is recorded right after `ours(smt, may~smt)`.
+    E.g., the value is 1 for `air (1-model)` in `compd.all`.
+  - The column `Time` is recorded right after `OK`.
+    E.g., the value is 0.4326s for `air (1-model)` in `compd.all`.
 
 
 3.4. Selective reparameterisation analysis (see above, Section 1, point (b)).
@@ -394,29 +363,40 @@ an example again):
    ===========================================================================
    REGRESSION TEST RESULTS:
    ===========================================================================
-   air guide              OK    0.2239 s  rvar(cont+disc): [1 repar, 3 all] (all={ z_pres_{}; z_what_{}; z_where_{}; })
+   air                  OK   0.2239s   #R:  ours(sound)  1 | totl(cont, disc)  2  1 | ours(may~sound && cont) { z_where_{}; }
    ===========================================================================
    Batch testing finished!
 
-The last line, especially `... OK ... [1 repar, 3 all] ...`, states that our
-analysis (in step 2) found 1 random variable to be reparameterisable among
-3 continuous/discrete random variables, and it successfully checked the
-correctness condition (in step 5) for the reparameterisation of the chosen
-1 random variable.
+The last line, especially `air ... OK ... ours(sound) 1 | totl(cont, disc) 2
+...` states that our analysis (in step 2) found 1 random variable to be
+reparameterisable among 2 continuous random variables, and it successfully
+checked the correctness condition (in step 5) for the reparameterisation of
+the chosen 1 random variable.
 
-Most importantly, you can reproduce each column of Table 4 (and 7) mainly by
-running `make reparl`:
+Most importantly, you can reproduce each column of Tables 5 and 9, except
+the columns under `Pyro \ Ours`, by running `make reparl`:
 
-  - The column `Ours` is obtained from the output of reparl, especially
-    from (# repar rvar): e.g., 1 for air from reparl.air explained above.
-  - The column `#DR` is obtained from the list of discrete random variables
-    (shown in the previous subsection). We found two typos on this column
-    (air: 2-->1, lda: 2-->1); we will fix them in our paper.
-  - The column `#CR` is obtained by computing (# all rvar) - (# discrete
-    rvar), where the first value is obtained from the output of reparl and
-    the second value from the column `#DR`.
-  - The column `Pyro \ Ours` is obtained by manually inspecting the oracle
-    smoothness results recorded in batch_diff/batch_diff.ml.
+  - All columns are obtained from the `REGRESSION TEST RESULTS` part of the
+    output file `reparl.all`.
+  - The columns `#CR` and `#DR` is recorded right after `totl(cont, disc)`.
+    E.g., the values are 2 and 1 for `air`.
+  - The column `Time` under `Ours` is recorded right after `OK`.
+    E.g., the value is 0.2239s for `air`.
+  - The column `Sound` under `Ours` is recorded right after `ours(sound)`.
+    E.g., the value is 1 for `air`.
+  - The columns `Sound` and `Unsound` under `Pyro \ Ours` are not what our
+    implementation computes or is supposed to compute.
+    - Our paper is about automatically computing a subset of random
+      variables that are sound for the SPGE variable-selection problem
+      (the results of which are shown in the columns under `Ours`), but
+      not about automatically computing the columns under `Pyro \ Ours`.
+    - The two columns under `Pyro \ Ours` are computed fully manually as
+      follows. (i) If the value for `Sound` under `Ours` is equal to the
+      value for `#CR`, the two columns have a value 0. (ii) Otherwise
+      (which happens for `air` and `spnor`), we should do manual
+      inspection of the (original) model and guide programs to fill in 
+      the two columns; the details of our manual inspection is given in
+      the last paragraph of Section 7 of our paper.
 
 
 ==============================================================================
