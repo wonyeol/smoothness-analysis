@@ -302,7 +302,7 @@ Most importantly, you can reproduce each column of Tables 4 and 8 by running
   - The column `Ours` is recorded right after `ours(smt, may~smt)`.
     E.g., the value is 1 for `air (1-model)` in `compd.all`.
   - The column `Time` is recorded right after `OK`.
-    E.g., the value is 0.4326s for `air (1-model)` in `compd.all`.
+    E.g., the value is 0.1007s for `air (1-model)` in `compd.all`.
 
 
 3.4. Selective reparameterisation analysis (see above, Section 1, point (b)).
