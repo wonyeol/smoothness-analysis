@@ -2,7 +2,7 @@
 
 This is an implementation for the following paper:
 > [**Smoothness Analysis for Probabilistic Programs with Application to Optimised Variational Inference**](https://arxiv.org/abs/2208.10530)</br>
-> [Wonyeol Lee](https://cs.stanford.edu/people/wonyeol/),
+> [Wonyeol Lee](https://wonyeol.github.io/),
 > [Xavier Rival](https://www.di.ens.fr/~rival/),
 > [Hongseok Yang](https://sites.google.com/view/hongseokyang/)</br>
 > [POPL 2023](https://popl23.sigplan.org/)
